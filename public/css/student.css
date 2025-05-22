@@ -1,0 +1,160 @@
+/* 
+ * Ce fichier CSS unifié résout les problèmes d'affichage
+ * Placez ce contenu dans un fichier public/css/student.css
+ */
+
+ :root {
+    --sidebar-bg: #343a40;
+    --sidebar-text: #fff;
+    --sidebar-hover: rgba(255, 255, 255, 0.1);
+    --sidebar-active: #0d6efd;
+    --header-bg: #fff;
+    --header-border: rgba(0, 0, 0, 0.1);
+    --card-border-radius: 0.5rem;
+    --transition-speed: 0.3s;
+}
+
+/* Structure de base pour les templates */
+.page-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.content-container {
+    display: flex;
+    flex: 1;
+}
+
+/* Styles pour header */
+.app-header {
+    background-color: var(--header-bg);
+    border-bottom: 1px solid var(--header-border);
+    padding: 0.75rem 1rem;
+}
+
+/* Styles pour la sidebar */
+.sidebar-container {
+    width: 240px;
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-text);
+    transition: transform var(--transition-speed) ease;
+}
+
+/* Styles pour le contenu principal */
+.main-content {
+    flex: 1;
+    padding: 1.5rem;
+    background-color: #f8f9fa;
+}
+
+.sidebar-header {
+    padding: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-menu {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu-item {
+    padding: 0;
+}
+
+.sidebar-menu-link {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    color: var(--sidebar-text);
+    text-decoration: none;
+    transition: background-color var(--transition-speed) ease;
+}
+
+.sidebar-menu-link:hover {
+    background-color: var(--sidebar-hover);
+    color: white;
+    text-decoration: none;
+}
+
+.sidebar-menu-link.active {
+    background-color: var(--sidebar-active);
+    color: white;
+}
+
+.sidebar-menu-icon {
+    width: 20px;
+    margin-right: 0.75rem;
+    text-align: center;
+}
+
+/* Cards stylisées */
+.app-card {
+    border-radius: var(--card-border-radius);
+    border: none;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: transform var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
+    margin-bottom: 1.5rem;
+}
+
+.app-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.app-card-header {
+    background-color: transparent;
+    border-bottom: 1px solid rgba(0,0,0,0.08);
+    padding: 1rem 1.25rem;
+    font-weight: 600;
+}
+
+/* Mobile responsive */
+@media (max-width: 767.98px) {
+    .sidebar-container {
+        position: fixed;
+        left: -240px;
+        top: 0;
+        bottom: 0;
+        z-index: 1040;
+    }
+    
+    .sidebar-container.show {
+        transform: translateX(240px);
+    }
+    
+    .sidebar-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 1030;
+        display: none;
+    }
+    
+    .sidebar-overlay.show {
+        display: block;
+    }
+}
+
+/* Animation pour transitions */
+.fade-enter-active, .fade-leave-active {
+    transition: opacity var(--transition-speed) ease;
+}
+
+.fade-enter, .fade-leave-to {
+    opacity: 0;
+}
+
+/* Corrections spécifiques pour uniformité */
+.btn {
+    border-radius: 0.35rem;
+}
+
+.progress {
+    border-radius: 0.35rem;
+    overflow: hidden;
+}
