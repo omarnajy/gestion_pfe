@@ -13,11 +13,39 @@ class DocumentController extends Controller
     /**
      * Display a listing of the documents (admin only).
      */
-    public function index()
+    public function index(Request $request)
     {
-        $documents = Document::with(['project', 'project.student', 'project.supervisor'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $query = Document::with(['project', 'project.student', 'project.supervisor']);
+
+        // Filtrage par recherche
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'LIKE', "%{$search}%")
+                  ->orWhere('type', 'LIKE', "%{$search}%")
+                  ->orWhereHas('project', function($projectQuery) use ($search) {
+                      $projectQuery->where('title', 'LIKE', "%{$search}%");
+                  })
+                  ->orWhereHas('project.student', function($studentQuery) use ($search) {
+                      $studentQuery->where('name', 'LIKE', "%{$search}%");
+                  })
+                  ->orWhereHas('project.supervisor', function($supervisorQuery) use ($search) {
+                      $supervisorQuery->where('name', 'LIKE', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filtrage par type de fichier
+        if ($request->filled('file_type')) {
+            $query->where('type', $request->file_type);
+        }
+
+        // Filtrage par projet spécifique (si nécessaire)
+        if ($request->filled('project_id')) {
+            $query->where('project_id', $request->project_id);
+        }
+
+        $documents = $query->orderBy('created_at', 'desc')->paginate(15);
         
         return view('admin.documents.index', compact('documents'));
     }
@@ -29,8 +57,9 @@ class DocumentController extends Controller
     {
         // Validate the request
         $request->validate([
-            'document' => 'required|file|max:10240|mimes:pdf,doc,docx,ppt,pptx',
+            'file' => 'required|file|max:10240|mimes:pdf,doc,docx,ppt,pptx',
             'type' => 'required|string|max:255',
+            'name' => 'required|string|max:255', // Nom donné par l'étudiant
         ]);
 
         // Ensure the current user owns this project
@@ -39,8 +68,8 @@ class DocumentController extends Controller
         }
 
         // Handle file upload
-        if ($request->hasFile('document')) {
-            $file = $request->file('document');
+        if ($request->hasFile('file')) {
+            $file = $request->file('file');
             $originalName = $file->getClientOriginalName();
             $path = $file->store('documents/' . $project->id, 'public');
             
@@ -48,7 +77,8 @@ class DocumentController extends Controller
             $document = new Document();
             $document->project_id = $project->id;
             $document->path = $path;
-            $document->original_name = $originalName;
+            $document->name = $request->name; // Nom donné par l'étudiant
+            $document->original_name = $originalName; // Nom original du fichier
             $document->type = $request->type;
             $document->size = $file->getSize();
             $document->mime_type = $file->getMimeType();
@@ -94,21 +124,20 @@ class DocumentController extends Controller
         }
 
         // Vérifiez si le fichier existe dans le stockage
-    if (!Storage::disk('public')->exists($document->path)) {
-        return back()->with('error', 'Le fichier demandé n\'existe plus.');
-    }
-    
-    // Retournez le fichier pour le téléchargement
-    return response()->download(
-        Storage::disk('public')->path($document->path), 
-        $document->name . '.' . pathinfo($document->path, PATHINFO_EXTENSION)
-    );
+        if (!Storage::disk('public')->exists($document->path)) {
+            return back()->with('error', 'Le fichier demandé n\'existe plus.');
+        }
+        
+        return response()->download(
+            Storage::disk('public')->path($document->path), 
+            $document->name . '.' . pathinfo($document->path, PATHINFO_EXTENSION)
+        );
     }
 
     /**
      * Admin specific download route.
      */
-     public function adminDownload($documentId)
+    public function adminDownload($documentId)
     {
         $document = Document::findOrFail($documentId);
 
@@ -124,7 +153,7 @@ class DocumentController extends Controller
 
         return response()->download(
             Storage::disk('public')->path($document->path), 
-            $document->original_name ?? ($document->name . '.' . pathinfo($document->path, PATHINFO_EXTENSION))
+            $document->name . '.' . pathinfo($document->path, PATHINFO_EXTENSION)
         );
     }
 

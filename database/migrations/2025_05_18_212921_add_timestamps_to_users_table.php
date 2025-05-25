@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -22,7 +23,7 @@ return new class extends Migration
                     $table->timestamp('updated_at')->nullable();
                 }
             });
-            
+
             // Mettre à jour les enregistrements existants
             DB::table('users')->whereNull('created_at')->update(['created_at' => now()]);
             DB::table('users')->whereNull('updated_at')->update(['updated_at' => now()]);

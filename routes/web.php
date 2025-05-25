@@ -58,12 +58,16 @@ Route::prefix('student')->middleware(['auth', \App\Http\Middleware\IsStudent::cl
     
     // Gestion des projets
     Route::get('/projects', [StudentController::class, 'projectIndex'])->name('student.projects.index');
-    Route::get('/student/projects/available', [StudentController::class, 'availableProjects'])->name('student.projects.available');
-    Route::post('/student/projects/{project}/apply', [StudentController::class, 'applyToProject'])->name('student.projects.apply');
+    Route::get('/projects/available', [StudentController::class, 'availableProjects'])->name('student.projects.available');
+    Route::post('/projects/{project}/apply', [StudentController::class, 'applyToProject'])->name('student.projects.apply');
     Route::get('/projects/create', [StudentController::class, 'projectCreate'])->name('student.projects.create');
     Route::post('/projects', [StudentController::class, 'projectStore'])->name('student.projects.store');
     Route::get('/projects/{project}', [StudentController::class, 'projectShow'])->name('student.projects.show');
-    
+
+    // NOUVELLE ROUTE POUR LA RESOUMISSION
+    Route::put('/projects/{project}/resubmit', [StudentController::class, 'resubmitProject'])->name('student.projects.resubmit');
+    Route::put('/projects/{project}/update', [StudentController::class, 'projectUpdate'])->name('student.projects.update');
+
     // Gestion des documents
     Route::post('/projects/{project}/documents', [StudentController::class, 'storeDocument'])->name('student.documents.store');
     Route::get('/projects/{project}/documents/{document}/download', [StudentController::class, 'downloadDocument'])->name('student.documents.download');
@@ -71,10 +75,11 @@ Route::prefix('student')->middleware(['auth', \App\Http\Middleware\IsStudent::cl
     
     // Commentaires et remarques
     Route::post('comments/{projectId}', [StudentController::class, 'storeComment'])->name('student.comments.store');
+    Route::delete('comments/{comment}', [StudentController::class, 'destroyComment'])->name('student.comments.destroy');
 
     //Profile
     Route::get('/profile', [StudentController::class, 'profile'])->name('student.profile');
-     Route::put('/student/profile/update', [StudentController::class, 'updateProfile'])->name('student.profile.update');
+    Route::put('/student/profile/update', [StudentController::class, 'updateProfile'])->name('student.profile.update');
     Route::put('/profile/password', [StudentController::class, 'updatePassword'])->name('student.update-password');
     Route::put('/profile/preferences', [StudentController::class, 'updatePreferences'])->name('student.update-preferences');
     Route::get('/student/profile/edit', [StudentController::class, 'editProfile'])->name('student.profile.edit');
@@ -97,6 +102,7 @@ Route::prefix('supervisor')->middleware(['auth', \App\Http\Middleware\IsSupervis
      // Gestion des commentaires et remarques
      Route::get('/projects/{project}/comments', [SupervisorController::class, 'storeComment'])->name('supervisor.comments.index');
      Route::post('/projects/{project}/comments', [SupervisorController::class, 'storeComment'])->name('supervisor.comments.store');
+     Route::delete('/comments/{comment}', [SupervisorController::class, 'destroyComment'])->name('supervisor.comments.destroy');
      
      // Évaluation
      Route::put('/projects/{project}/rate', [SupervisorController::class, 'rateProject'])->name('supervisor.projects.evaluate');
@@ -107,6 +113,10 @@ Route::prefix('supervisor')->middleware(['auth', \App\Http\Middleware\IsSupervis
 
      //Profile
     Route::get('/profile', [SupervisorController::class, 'profile'])->name('supervisor.profile');
+    Route::put('/supervisor/profile/update', [SupervisorController::class, 'updateProfile'])->name('supervisor.profile.update');
+    Route::put('/profile/password', [SupervisorController::class, 'updatePassword'])->name('supervisor.update-password');
+    Route::put('/profile/preferences', [SupervisorController::class, 'updatePreferences'])->name('supervisor.update-preferences');
+    Route::get('/supervisor/profile/edit', [SupervisorController::class, 'editProfile'])->name('supervisor.profile.edit');
 });
 
 // Routes pour les administrateurs
@@ -133,6 +143,7 @@ Route::prefix('admin')->middleware(['auth', \App\Http\Middleware\IsAdmin::class]
     
     // Validation finale des PFEs
     Route::get('/projects', [AdminController::class, 'projectIndex'])->name('admin.projects.index');
+    Route::put('/projects/{project}/approve', [AdminController::class, 'approveProject'])->name('admin.projects.approve');
     Route::put('/projects/{project}/validate', [AdminController::class, 'validateProject'])->name('admin.projects.validate');
     Route::get('/projects/{project}', [AdminController::class, 'projectShow'])->name('admin.projects.show');
     Route::put('/projects/{project}/reject', [AdminController::class, 'rejectProject'])->name('admin.projects.reject');
@@ -147,9 +158,15 @@ Route::prefix('admin')->middleware(['auth', \App\Http\Middleware\IsAdmin::class]
     Route::get('/documents', [DocumentController::class, 'index'])->name('admin.documents');
     Route::get('/documents/{document}/download', [DocumentController::class, 'admindownload'])->name('admin.documents.download');
     Route::delete('/documents/{document}', [DocumentController::class, 'destroy'])->name('admin.documents.destroy');
+    // Nouvelle route pour voir les documents d'un projet spécifique
+    Route::get('/projects/{project}/documents', [DocumentController::class, 'index'])->name('admin.projects.documents');
 
     //Profile
     Route::get('/profile', [AdminController::class, 'profile'])->name('admin.profile');
+    Route::put('/supervisor/profile/update', [AdminController::class, 'updateProfile'])->name('admin.profile.update');
+    Route::put('/profile/password', [AdminController::class, 'updatePassword'])->name('admin.update-password');
+    Route::put('/profile/preferences', [AdminController::class, 'updatePreferences'])->name('admin.update-preferences');
+    Route::get('/supervisor/profile/edit', [AdminController::class, 'editProfile'])->name('admin.profile.edit');
 
     //Route::get('/projects', [ProjectController::class, 'index'])->name('admin.projects.index');
 

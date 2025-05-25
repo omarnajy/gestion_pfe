@@ -27,9 +27,7 @@ class AdminController extends Controller
         $userCount = User::count();
         $studentsWithoutSupervisor = User::where('role', 'student')
         ->whereDoesntHave('assignments')
-        ->whereDoesntHave('projectsAsStudent', function($query) {
-            $query->whereNotNull('supervisor_id');
-        })
+        ->get()
         ->count();
         $studentsWithoutSupervisorDetails = User::where('role', 'student')
         ->whereDoesntHave('assignments')
@@ -493,8 +491,58 @@ public function syncProjectsAndAssignments()
     
     public function profile()
     {
-        // Logique pour afficher le profil de l’admin
-        return view('admin.profile'); // ou autre vue appropriée
+        $user = Auth::user();
+        return view('admin.profile',compact('user'));; // ou autre vue appropriée
+    }
+
+    public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+            'department' => 'nullable|string|max:255',
+            'specialty' => 'nullable|string|max:255',
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        if (isset($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $user->update($validated);
+
+        return redirect()->route('admin.dashboard')
+            ->with('success', 'Profil mis à jour avec succès.');
+    }
+    
+    public function updatePassword(Request $request)
+    {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'current_password' => ['required', function ($attribute, $value, $fail) use ($user) {
+                if (!Hash::check($value, $user->password)) {
+                    $fail('Le mot de passe actuel est incorrect.');
+                }
+            }],
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user->password = Hash::make($validated['new_password']);
+        $user->save();
+
+        return redirect()->route('admin.profile')->with('success', 'Mot de passe changé avec succès.');
+    }
+
+    public function editProfile()
+    {
+        $user = auth()->user();
+        return view('admin.profile_edit', compact('user'));
     }
 
     // Paramètres généraux

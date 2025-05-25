@@ -16,6 +16,10 @@ class ProjectApplication extends Model
         'status',
         'feedback',
     ];
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
+    ];
 
     /** 
      * Get the project this application is for.

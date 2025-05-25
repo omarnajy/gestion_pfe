@@ -17,14 +17,15 @@ class Document extends Model
     protected $fillable = [
         'project_id',
         'name',
+        'original_name',
         'type',
         'path',
         'size',
-        'extension',
+        'mime_type',
         'uploaded_by',
     ];
 
-/**
+    /**
      * Get the user who uploaded the document.
      */
     public function uploader()
@@ -48,21 +49,32 @@ class Document extends Model
         return pathinfo($this->original_name, PATHINFO_EXTENSION);
     }
 
- /**
+    /**
      * Get the formatted size of the document.
      */
-    public function getSizeFormattedAttribute()
+    public function getFormattedSizeAttribute()
     {
-        $units = ['B', 'KB', 'MB', 'GB', 'TB'];
-        $size = $this->size;
-        $unitIndex = 0;
-
-        while ($size >= 1024 && $unitIndex < count($units) - 1) {
-            $size /= 1024;
-            $unitIndex++;
+        if (!$this->size) {
+            return '0 B';
         }
 
-        return round($size, 2) . ' ' . $units[$unitIndex];
+        $bytes = $this->size;
+        $units = ['B', 'KB', 'MB', 'GB'];
+        
+        for ($i = 0; $bytes > 1024 && $i < count($units) - 1; $i++) {
+            $bytes /= 1024;
+        }
+        
+        return round($bytes, 2) . ' ' . $units[$i];
+    }
+
+    /**
+     * Get the display name for the document.
+     * Si le champ 'name' est vide, utilise le nom original du fichier.
+     */
+    public function getDisplayNameAttribute()
+    {
+        return $this->attributes['name'] ?: ($this->original_name ?: 'Document sans nom');
     }
 
     /**

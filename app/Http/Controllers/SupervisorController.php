@@ -27,7 +27,19 @@ class SupervisorController extends Controller
                                       ->get();
         $pendingProjectsCount = $pendingProjectsCollection->count();
         $activeProjects = Project::where('status', 'active')->count();
-        $totalProjects = Project::count();
+        // Récupérer uniquement les projets de ce superviseur spécifique
+       // 1. Via supervisor_id direct
+       $directProjects = Project::where('supervisor_id', $user->id)->get();
+    
+        // 2. Via les affectations
+        $studentIds = \App\Models\Assignment::where('supervisor_id', $user->id)
+               ->pluck('student_id')
+               ->toArray();
+        $assignmentProjects = Project::whereIn('student_id', $studentIds)->get();
+        // 3. Combiner et dédupliquer
+        $allSupervisorProjects = $directProjects->concat($assignmentProjects)->unique('id');
+    
+        $totalProjects = $allSupervisorProjects->count();
         $completedProjects = Project::where('status', 'completed')->count();
         $recentComments = Comment::whereHas('project', function($query) use ($user) {
                                 $query->where('supervisor_id', $user->id);
@@ -196,40 +208,79 @@ class SupervisorController extends Controller
     }
 }
     
-    public function rejectProject(Request $request, $id)
-    {
-        $project = Project::where('supervisor_id', Auth::id())->findOrFail($id);
+    
+//la méthode rejectProject
+public function rejectProject(Request $request, $id)
+{
+    try {
+        // Récupérer le projet
+        $project = Project::findOrFail($id);
         
+        // Vérifier l'autorisation
+        $userIsAssignedSupervisor = \App\Models\Assignment::where('supervisor_id', Auth::id())
+            ->where(function($query) use ($project) {
+                $query->where('project_id', $project->id)
+                    ->orWhere('student_id', $project->student_id);
+            })
+            ->exists();
+            
+        if ($project->supervisor_id != Auth::id() && !$userIsAssignedSupervisor) {
+            return redirect()->back()->with('error', 'Vous n\'êtes pas autorisé à rejeter ce projet.');
+        }
+        
+        // Validation
         $validated = $request->validate([
-            'rejection_reason' => 'required|string',
+            'reason' => 'required|string|min:10|max:1000',
+        ], [
+            'reason.required' => 'La raison du rejet est obligatoire.',
+            'reason.min' => 'La raison doit contenir au moins 10 caractères.',
+            'reason.max' => 'La raison ne peut pas dépasser 1000 caractères.',
         ]);
         
-        if ($project->status === 'pending') {
-            $project->status = 'rejected';
-            $project->save();
-            
+        // Vérifier que le projet peut être rejeté
+        if (!in_array($project->status, ['pending', 'submitted'])) {
+            return redirect()->back()->with('error', 'Ce projet ne peut pas être rejeté car il n\'est pas en attente.');
+        }
+        
+        // Mettre à jour seulement le statut
+        $project->status = 'rejected';
+        
+        if ($project->save()) {
             // Ajouter un commentaire avec la raison du rejet
             Comment::create([
                 'project_id' => $project->id,
                 'user_id' => Auth::id(),
-                'content' => 'Projet rejeté : ' . $validated['rejection_reason'],
+                'content' => 'Projet rejeté : ' . $validated['reason'],
                 'is_feedback' => true,
             ]);
             
-            // Notifier l'étudiant
-            Notification::create([
-                'user_id' => $project->student_id,
-                'title' => 'Projet rejeté',
-                'message' => 'Votre projet "' . $project->title . '" a été rejeté. Veuillez consulter les commentaires pour plus de détails.',
-                'type' => 'warning',
-                'notifiable_id' => $project->id,
-                'notifiable_type' => Project::class,
-            ]);
+            // Notifier l'étudiant si un étudiant est assigné
+            if ($project->student_id) {
+                Notification::create([
+                    'user_id' => $project->student_id,
+                    'title' => 'Projet rejeté',
+                    'message' => 'Votre projet "' . $project->title . '" a été rejeté. Veuillez consulter les commentaires pour plus de détails.',
+                    'type' => 'warning',
+                    'notifiable_id' => $project->id,
+                    'notifiable_type' => Project::class,
+                ]);
+            }
+            
+            return redirect()->route('supervisor.projects.index')
+                ->with('success', 'Projet rejeté avec succès.');
+        } else {
+            return redirect()->back()->with('error', 'Erreur lors de la sauvegarde du rejet.');
         }
         
-        return redirect()->route('supervisor.projects.show', $project->id)
-            ->with('success', 'Projet rejeté avec succès.');
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        return redirect()->back()
+            ->withErrors($e->validator)
+            ->withInput();
+    } catch (\Exception $e) {
+        \Log::error('Erreur lors du rejet du projet #' . $id . ' par le superviseur #' . Auth::id() . ': ' . $e->getMessage());
+        return redirect()->back()->with('error', 'Une erreur est survenue lors du rejet du projet. Veuillez réessayer.');
     }
+}
     
     public function addComment(Request $request, $projectId)
     {
@@ -310,6 +361,40 @@ public function storeComment(Request $request, $projectId)
     
     return redirect()->route('supervisor.projects.show', $project->id)
         ->with('success', 'Commentaire ajouté avec succès.');
+}
+
+/**
+ * Supprime un commentaire spécifique.
+ *
+ * @param  int  $commentId
+ * @return \Illuminate\Http\RedirectResponse
+ */
+public function destroyComment($commentId)
+{
+    $comment = Comment::findOrFail($commentId);
+    $project = Project::findOrFail($comment->project_id);
+    
+    // Vérifier les autorisations
+    $userIsAssignedSupervisor = \App\Models\Assignment::where('supervisor_id', Auth::id())
+        ->where(function($query) use ($project) {
+            $query->where('project_id', $project->id)
+                ->orWhere('student_id', $project->student_id);
+        })
+        ->exists();
+        
+    if ($project->supervisor_id != Auth::id() && !$userIsAssignedSupervisor) {
+        return redirect()->back()->with('error', 'Vous n\'êtes pas autorisé à supprimer ce commentaire.');
+    }
+    
+    // Vérifier que le superviseur est le propriétaire du commentaire
+    if ($comment->user_id !== Auth::id()) {
+        return redirect()->back()->with('error', 'Vous ne pouvez supprimer que vos propres commentaires.');
+    }
+    
+    // Supprimer le commentaire
+    $comment->delete();
+    
+    return redirect()->back()->with('success', 'Commentaire supprimé avec succès.');
 }
     
     public function evaluateProject($id)
@@ -443,7 +528,56 @@ public function storeComment(Request $request, $projectId)
     return view('supervisor.profile', compact('user'));
 }
 
+public function updateProfile(Request $request)
+    {
+        $user = Auth::user();
+
+        $validated = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users,email,' . $user->id,
+            'phone' => 'nullable|string|max:20',
+            'department' => 'nullable|string|max:255',
+            'specialty' => 'nullable|string|max:255',
+            'password' => 'nullable|string|min:8|confirmed',
+        ]);
+
+        if (isset($validated['password'])) {
+            $validated['password'] = Hash::make($validated['password']);
+        } else {
+            unset($validated['password']);
+        }
+
+        $user->update($validated);
+
+        return redirect()->route('supervisor.dashboard')
+            ->with('success', 'Profil mis à jour avec succès.');
+    }
     
+    public function updatePassword(Request $request)
+    {
+        $user = auth()->user();
+
+        $validated = $request->validate([
+            'current_password' => ['required', function ($attribute, $value, $fail) use ($user) {
+                if (!Hash::check($value, $user->password)) {
+                    $fail('Le mot de passe actuel est incorrect.');
+                }
+            }],
+            'new_password' => 'required|string|min:8|confirmed',
+        ]);
+
+        $user->password = Hash::make($validated['new_password']);
+        $user->save();
+
+        return redirect()->route('supervisor.profile')->with('success', 'Mot de passe changé avec succès.');
+    }
+
+    public function editProfile()
+    {
+        $user = auth()->user();
+        return view('supervisor.profile_edit', compact('user'));
+    }
+
     public function completeMeeting(Request $request, $meetingId)
     {
         $meeting = Meeting::findOrFail($meetingId);
