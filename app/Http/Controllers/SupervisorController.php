@@ -406,52 +406,6 @@ public function destroyComment($commentId)
         return view('supervisor.projects.evaluate', compact('project'));
     }
     
-    public function storeEvaluation(Request $request, $projectId)
-    {
-        $project = Project::where('supervisor_id', Auth::id())->findOrFail($projectId);
-        
-        $validated = $request->validate([
-            'technical_grade' => 'required|numeric|min:0|max:20',
-            'presentation_grade' => 'required|numeric|min:0|max:20',
-            'documentation_grade' => 'required|numeric|min:0|max:20',
-            'feedback' => 'required|string',
-            'type' => 'required|in:milestone,final',
-        ]);
-        
-        $evaluation = Evaluation::create([
-            'project_id' => $project->id,
-            'evaluator_id' => Auth::id(),
-            'technical_grade' => $validated['technical_grade'],
-            'presentation_grade' => $validated['presentation_grade'],
-            'documentation_grade' => $validated['documentation_grade'],
-            'feedback' => $validated['feedback'],
-            'type' => $validated['type'],
-        ]);
-        
-        // Calculer la note totale
-        $evaluation->calculateTotalGrade();
-        
-        // Si c'est une évaluation finale, mettre à jour la note du projet
-        if ($validated['type'] === 'final') {
-            $project->final_grade = $evaluation->total_grade;
-            $project->status = 'completed';
-            $project->completion_date = now();
-            $project->save();
-        }
-        
-        // Notifier l'étudiant
-        Notification::create([
-            'user_id' => $project->student_id,
-            'title' => 'Nouvelle évaluation',
-            'message' => 'Votre projet "' . $project->title . '" a été évalué par votre encadreur.',
-            'type' => 'info',
-            'notifiable_id' => $evaluation->id,
-            'notifiable_type' => Evaluation::class,
-        ]);
-        
-        return redirect()->route('supervisor.projects.show', $project->id)
-            ->with('success', 'Évaluation enregistrée avec succès.');
-    }
     
    public function students()
 {
@@ -604,4 +558,56 @@ public function updateProfile(Request $request)
         return redirect()->route('supervisor.projects.show', $project->id)
             ->with('success', 'Réunion marquée comme terminée.');
     }
+
+    /**
+ * Affiche le formulaire d'évaluation d'un projet
+ */
+public function showEvaluationForm($id)
+{
+    $project = Project::where('supervisor_id', Auth::id())
+        ->with(['student', 'evaluations'])
+        ->findOrFail($id);
+    
+    $existingEvaluation = $project->evaluations()->first();
+    
+    return view('supervisor.evaluation.form', compact('project', 'existingEvaluation'));
+}
+
+/**
+ * Enregistre ou met à jour l'évaluation d'un projet
+ */
+public function storeEvaluation(Request $request, $id)
+{
+    $project = Project::where('supervisor_id', Auth::id())->findOrFail($id);
+    
+    $validated = $request->validate([
+        'presentation_grade' => 'required|numeric|min:0|max:20', 
+        'documentation_grade' => 'required|numeric|min:0|max:20',
+    ]);
+    
+    // Calculer la note totale
+    $totalGrade = ($validated['presentation_grade'] + $validated['documentation_grade']) / 2;
+    
+    $evaluation = Evaluation::updateOrCreate(
+        ['project_id' => $project->id, 'evaluator_id' => Auth::id()],
+        [
+            'presentation_grade' => $validated['presentation_grade'],
+            'documentation_grade' => $validated['documentation_grade'],
+            'grade' => round($totalGrade, 2)
+        ]
+    );
+    
+    // Notifier l'étudiant
+    /*Notification::create([
+        'user_id' => $project->student_id,
+        'title' => 'Évaluation reçue',
+        'message' => 'Votre projet "' . $project->title . '" a été évalué par votre encadreur.',
+        'type' => 'info',
+        'notifiable_id' => $evaluation->id,
+        'notifiable_type' => Evaluation::class,
+    ]);*/
+    
+    return redirect()->route('supervisor.projects.show', $project->id)
+        ->with('success', 'Évaluation enregistrée avec succès.');
+}
 }

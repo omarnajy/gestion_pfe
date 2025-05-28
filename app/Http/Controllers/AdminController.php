@@ -6,6 +6,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Project;
 use App\Models\Notification;
+use App\Models\Evaluation;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -592,4 +593,44 @@ public function syncProjectsAndAssignments()
         
         return view('admin.statistics.index', compact('projectStats', 'departmentStats', 'supervisorStats'));
     }
+
+    /**
+ * Affiche toutes les évaluations
+ */
+public function evaluationsIndex(Request $request)
+{
+    $query = Evaluation::with(['project.student', 'project.supervisor', 'evaluator']);
+    
+    // Filtres
+    if ($request->filled('supervisor')) {
+        $query->whereHas('evaluator', function($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->supervisor . '%');
+        });
+    }
+    
+    if ($request->filled('student')) {
+        $query->whereHas('project.student', function($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->student . '%');
+        });
+    }
+    
+    if ($request->filled('grade_min')) {
+        $query->where('grade', '>=', $request->grade_min);
+    }
+    
+    if ($request->filled('grade_max')) {
+        $query->where('grade', '<=', $request->grade_max);
+    }
+    
+    $evaluations = $query->orderBy('created_at', 'desc')->paginate(15);
+    
+    // Statistiques
+    $stats = [
+        'total' => Evaluation::count(),
+        'average_grade' => Evaluation::avg('grade'),
+        'success_rate' => Evaluation::where('grade', '>=', 10)->count() / max(Evaluation::count(), 1) * 100
+    ];
+    
+    return view('admin.evaluations.index', compact('evaluations', 'stats'));
+}
 }

@@ -173,7 +173,14 @@
                             <a href="{{ route('student.projects.index') }}"
                                 class="nav-link {{ request()->is('student/projects*') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-project-diagram"></i>
-                                <p>Mes projets</p>
+                                <p>Mon projet</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{{ route('student.evaluation.show') }}"
+                                class="nav-link {{ request()->is('student/evaluation') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-star"></i>
+                                <p>Mon Évaluation</p>
                             </a>
                         </li>
                         <li class="nav-item">

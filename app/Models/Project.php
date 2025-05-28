@@ -89,10 +89,6 @@ public function applications()
         return $this->hasMany(Milestone::class);
     }
 
-    public function meetings()
-    {
-        return $this->hasMany(Meeting::class);
-    }
 
     public function evaluations()
     {
@@ -104,9 +100,29 @@ public function applications()
     return $this->hasMany(Document::class);
 }
 
-public function timeline()
+/**
+ * Obtenir la dernière évaluation
+ */
+public function latestEvaluation()
 {
-    return $this->hasMany(TimelineEvent::class)->orderBy('created_at', 'asc');
+    return $this->hasOne(Evaluation::class)->latest();
+}
+
+/**
+ * Vérifier si le projet a été évalué
+ */
+public function hasEvaluation()
+{
+    return $this->evaluations()->exists();
+}
+
+/**
+ * Obtenir la note finale du projet
+ */
+public function getFinalGradeAttribute()
+{
+    $evaluation = $this->evaluations()->first();
+    return $evaluation ? $evaluation->grade : null;
 }
 
     public function getCompletionPercentageAttribute()
@@ -119,8 +135,6 @@ public function timeline()
         $completedTasks = $this->tasks()->where('status', 'completed')->count();
         return round(($completedTasks / $totalTasks) * 100);
     }
-
-    // Dans app/Models/Project.php
 
 /**
  * Get the color class for the status badge.

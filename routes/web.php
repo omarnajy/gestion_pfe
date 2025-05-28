@@ -68,6 +68,9 @@ Route::prefix('student')->middleware(['auth', \App\Http\Middleware\IsStudent::cl
     Route::put('/projects/{project}/resubmit', [StudentController::class, 'resubmitProject'])->name('student.projects.resubmit');
     Route::put('/projects/{project}/update', [StudentController::class, 'projectUpdate'])->name('student.projects.update');
 
+    // Show Evaluation
+    Route::get('/evaluation', [StudentController::class, 'showEvaluation'])->name('student.evaluation.show');
+
     // Gestion des documents
     Route::post('/projects/{project}/documents', [StudentController::class, 'storeDocument'])->name('student.documents.store');
     Route::get('/projects/{project}/documents/{document}/download', [StudentController::class, 'downloadDocument'])->name('student.documents.download');
@@ -105,7 +108,9 @@ Route::prefix('supervisor')->middleware(['auth', \App\Http\Middleware\IsSupervis
      Route::delete('/comments/{comment}', [SupervisorController::class, 'destroyComment'])->name('supervisor.comments.destroy');
      
      // Évaluation
-     Route::put('/projects/{project}/rate', [SupervisorController::class, 'rateProject'])->name('supervisor.projects.evaluate');
+     Route::get('/projects/{project}/evaluate', [SupervisorController::class, 'showEvaluationForm'])->name('supervisor.evaluation.form');
+     Route::post('/projects/{project}/evaluate', [SupervisorController::class, 'storeEvaluation'])->name('supervisor.evaluation.store');
+     Route::put('/projects/{project}/evaluate', [SupervisorController::class, 'storeEvaluation'])->name('supervisor.projects.evaluate');
      
      // Téléchargement des documents
      Route::get('/projects/{project}/documents', [SupervisorController::class, 'documents'])->name('supervisor.documents.index');
@@ -147,6 +152,9 @@ Route::prefix('admin')->middleware(['auth', \App\Http\Middleware\IsAdmin::class]
     Route::put('/projects/{project}/validate', [AdminController::class, 'validateProject'])->name('admin.projects.validate');
     Route::get('/projects/{project}', [AdminController::class, 'projectShow'])->name('admin.projects.show');
     Route::put('/projects/{project}/reject', [AdminController::class, 'rejectProject'])->name('admin.projects.reject');
+
+    // Évaluation
+    Route::get('/evaluations', [AdminController::class, 'evaluationsIndex'])->name('admin.evaluations.index');
     
     // Statistiques
     Route::get('/statistics', [StatisticsController::class, 'index'])->name('admin.statistics');

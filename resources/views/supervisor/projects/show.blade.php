@@ -48,25 +48,51 @@
                                     </div>
                                 @endif
 
-                                @if ($project->status === 'validated' && !$project->has_been_rated)
+                                {{-- Bouton d'évaluation --}}
+                                @if (in_array($project->status, ['approved', 'validated']))
                                     <div class="mb-4">
-                                        <button type="button" class="btn btn-warning" data-bs-toggle="modal"
-                                            data-bs-target="#rateProjectModal">
-                                            <i class="fas fa-star"></i> Noter le projet
-                                        </button>
+                                        <a href="{{ route('supervisor.evaluation.form', $project->id) }}"
+                                            class="btn btn-warning">
+                                            <i class="fas fa-star"></i>
+                                            @if ($project->evaluations()->exists())
+                                                Modifier l'évaluation
+                                            @else
+                                                Évaluer le projet
+                                            @endif
+                                        </a>
                                     </div>
                                 @endif
 
-                                @if ($project->has_been_rated)
+                                {{-- Affichage de l'évaluation existante --}}
+                                @if ($project->evaluations()->exists())
+                                    @php $evaluation = $project->evaluations()->first(); @endphp
                                     <div class="card mb-4">
                                         <div class="card-header bg-warning text-white">
-                                            Évaluation du projet
+                                            <h6 class="mb-0">Évaluation du projet</h6>
                                         </div>
                                         <div class="card-body">
-                                            <h5>Note: {{ $project->rating }}/20</h5>
-                                            <p><strong>Commentaire:</strong> {{ $project->rating_comment }}</p>
-                                            <p class="text-muted small">Évalué le {{ $project->rated_at->format('d/m/Y') }}
-                                            </p>
+                                            <div class="row">
+                                                <div class="col-md-3 text-center">
+                                                    <h4 class="text-primary">{{ number_format($evaluation->grade, 2) }}/20
+                                                    </h4>
+                                                    <p class="mb-0">Note finale</p>
+                                                </div>
+                                                <div class="col-md-9">
+                                                    <div class="row mb-2">
+
+                                                        <div class="col-4">
+                                                            <strong>Présentation:</strong>
+                                                            {{ $evaluation->presentation_grade }}/20
+                                                        </div>
+                                                        <div class="col-4">
+                                                            <strong>Documentation:</strong>
+                                                            {{ $evaluation->documentation_grade }}/20
+                                                        </div>
+                                                    </div>
+                                                    <small class="text-muted">Évalué le
+                                                        {{ $evaluation->created_at->format('d/m/Y à H:i') }}</small>
+                                                </div>
+                                            </div>
                                         </div>
                                     </div>
                                 @endif
@@ -86,10 +112,12 @@
                                                 <i class="fas fa-file-alt"></i> Documents:
                                                 {{ $project->documents->count() }}
                                             </li>
-                                            <li class="list-group-item">
-                                                <i class="fas fa-comments"></i> Commentaires:
-                                                {{ $project->comments->count() }}
-                                            </li>
+                                            @if ($project->evaluations()->exists())
+                                                <li class="list-group-item">
+                                                    <i class="fas fa-star text-warning"></i> Évaluation:
+                                                    {{ number_format($project->evaluations()->first()->grade, 2) }}/20
+                                                </li>
+                                            @endif
                                             @if ($project->status === 'validated' || $project->status === 'approved')
                                                 <li class="list-group-item">
                                                     <i class="fas fa-check-circle text-success"></i> Validé le:
@@ -191,7 +219,7 @@
                                                             <div>
                                                                 <strong>{{ $comment->user->name }}</strong>
                                                                 <span
-                                                                    class="badge bg-secondary">{{ $comment->user->role_text }}</span>
+                                                                    class="badge bg-secondary">{{ $comment->user->role }}</span>
                                                             </div>
                                                             <div class="d-flex align-items-center">
                                                                 <small
@@ -261,7 +289,7 @@
         </div>
     </div>
 
-    <!-- Modal de rejet - Version simplifiée sans colonnes supplémentaires -->
+    <!-- Modal de rejet -->
     <div class="modal fade" id="rejectProjectModal" tabindex="-1" aria-labelledby="rejectProjectModalLabel"
         aria-hidden="true">
         <div class="modal-dialog">
@@ -298,41 +326,6 @@
                         <button type="submit" class="btn btn-danger">
                             <i class="fas fa-ban me-1"></i>Rejeter le projet
                         </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Modal d'évaluation -->
-    <div class="modal fade" id="rateProjectModal" tabindex="-1" aria-labelledby="rateProjectModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <form action="{{ route('supervisor.projects.evaluate', $project->id) }}" method="POST">
-                    @csrf
-                    @method('PUT')
-                    <div class="modal-header">
-                        <h5 class="modal-title" id="rateProjectModalLabel">Noter le projet</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <p>Évaluation du projet <strong>{{ $project->title }}</strong></p>
-
-                        <div class="mb-3">
-                            <label for="rating" class="form-label">Note (sur 20)</label>
-                            <input type="number" class="form-control" id="rating" name="rating" min="0"
-                                max="20" step="0.5" required>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="rating_comment" class="form-label">Commentaire d'évaluation</label>
-                            <textarea class="form-control" id="rating_comment" name="comment" rows="3" required></textarea>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
-                        <button type="submit" class="btn btn-warning">Soumettre la note</button>
                     </div>
                 </form>
             </div>

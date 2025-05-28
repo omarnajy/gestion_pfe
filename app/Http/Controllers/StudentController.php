@@ -619,4 +619,22 @@ public function destroyComment($commentId)
 
         return redirect()->route('student.profile')->with('success', 'Mot de passe changé avec succès.');
     }
+
+    /**
+ * Affiche l'évaluation du projet de l'étudiant
+ */
+public function showEvaluation()
+{
+    $user = Auth::user();
+    $project = Project::where('student_id', $user->id)->first();
+    
+    if (!$project) {
+        return redirect()->route('student.dashboard')
+            ->with('error', 'Vous n\'avez pas de projet assigné.');
+    }
+    
+    $evaluation = $project->evaluations()->latest()->first();
+    
+    return view('student.evaluation.show', compact('project', 'evaluation'));
+}
 }
