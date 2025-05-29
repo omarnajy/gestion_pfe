@@ -1,4 +1,3 @@
-// database/migrations/2024_05_01_000005_create_notifications_table.php
 <?php
 
 use Illuminate\Database\Migrations\Migration;
@@ -15,9 +14,14 @@ class CreateNotificationsTable extends Migration
             $table->string('title');
             $table->text('message');
             $table->string('type')->nullable(); // info, warning, success, etc.
-            $table->morphs('notifiable'); // Pour lier à différents modèles (polymorphic)
+            $table->json('data')->nullable(); 
+            $table->string('notifiable_type');
+            $table->unsignedBigInteger('notifiable_id');
             $table->boolean('read')->default(false);
             $table->timestamps();
+
+            // Index pour la relation polymorphique
+            $table->index(['notifiable_type', 'notifiable_id']);
         });
     }
 

@@ -292,6 +292,13 @@
                             </a>
                         </li>
                         <li class="nav-item">
+                            <a href="{{ route('admin.defenses.index') }}"
+                                class="nav-link {{ request()->routeIs('admin.defenses*') ? 'active' : '' }}">
+                                <i class="nav-icon fas fa-gavel"></i>
+                                <p>Soutenances</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
                             <a href="{{ route('admin.profile') }}"
                                 class="nav-link {{ request()->routeIs('admin.profile') ? 'active' : '' }}">
                                 <i class="nav-icon fas fa-user"></i>

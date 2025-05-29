@@ -176,7 +176,12 @@ Route::prefix('admin')->middleware(['auth', \App\Http\Middleware\IsAdmin::class]
     Route::put('/profile/preferences', [AdminController::class, 'updatePreferences'])->name('admin.update-preferences');
     Route::get('/supervisor/profile/edit', [AdminController::class, 'editProfile'])->name('admin.profile.edit');
 
-    //Route::get('/projects', [ProjectController::class, 'index'])->name('admin.projects.index');
+    //Notification-Soutenance
+    Route::get('/defenses', [AdminController::class, 'defensesIndex'])->name('admin.defenses.index');
+    Route::get('/defenses/create', [AdminController::class, 'defenseCreate'])->name('admin.defenses.create');
+    Route::post('/defenses', [AdminController::class, 'defenseStore'])->name('admin.defenses.store');
+    Route::get('/defenses/{defense}/edit', [AdminController::class, 'defenseEdit'])->name('admin.defenses.edit');
+    Route::put('/defenses/{defense}', [AdminController::class, 'defenseUpdate'])->name('admin.defenses.update');
 
 });
 

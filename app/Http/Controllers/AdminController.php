@@ -7,6 +7,8 @@ use App\Models\User;
 use App\Models\Project;
 use App\Models\Notification;
 use App\Models\Evaluation;
+use App\Models\Defense;
+use App\Services\DefenseNotificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -633,4 +635,49 @@ public function evaluationsIndex(Request $request)
     
     return view('admin.evaluations.index', compact('evaluations', 'stats'));
 }
+
+public function defensesIndex()
+{
+    $defenses = Defense::with(['project.student', 'project.supervisor'])
+        ->orderBy('date')
+        ->paginate(15);
+    
+    return view('admin.defenses.index', compact('defenses'));
+}
+
+public function defenseCreate()
+{
+    $projects = Project::where('status', 'approved')
+        ->with(['student', 'supervisor'])
+        ->get();
+    
+    return view('admin.defenses.create', compact('projects'));
+}
+
+public function defenseStore(Request $request)
+{
+    $validated = $request->validate([
+        'project_id' => 'required|exists:projects,id',
+        'date' => 'required|date|after:today',
+        'time' => 'required',
+        'location' => 'required|string',
+        'duration' => 'required|integer|min:30|max:180',
+        'jury_members' => 'required|array|min:2',
+        'jury_members.*.name' => 'required|string',
+        'jury_members.*.email' => 'required|email'
+    ]);
+
+    if (!isset($validated['duration'])) {
+            $validated['duration'] = 40;
+        }
+
+    $defense = Defense::create($validated);
+    
+    // Envoyer les notifications
+    app(DefenseNotificationService::class)->notifyDefenseScheduled($defense);
+    
+    return redirect()->route('admin.defenses.index')
+        ->with('success', 'Soutenance programmée et notifications envoyées');
+}
+
 }

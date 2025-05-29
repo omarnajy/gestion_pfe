@@ -17,7 +17,64 @@
             </a>
         </div>
     </div>
+    {{-- Notifications de soutenance pour le superviseur --}}
+    @if (auth()->user()->notifications()->where('type', 'defense_scheduled')->where('read', false)->exists())
+        <div class="row mb-4">
+            <div class="col-12">
+                @foreach (auth()->user()->notifications()->where('type', 'defense_scheduled')->where('read', false)->get() as $notification)
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <div class="d-flex align-items-start">
+                            <i class="fas fa-gavel fa-2x me-3 text-info"></i>
+                            <div class="flex-grow-1">
+                                <h5 class="alert-heading mb-1">
+                                    <i class="fas fa-user-graduate me-1"></i>{{ $notification->title }}
+                                </h5>
+                                <p class="mb-2">{{ $notification->message }}</p>
 
+                                @if ($notification->data)
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="card bg-light border-0">
+                                                <div class="card-body py-2">
+                                                    <h6 class="card-title mb-1">Détails de la soutenance</h6>
+                                                    <div class="d-flex justify-content-between">
+                                                        <span><i class="fas fa-calendar text-primary"></i>
+                                                            {{ \Carbon\Carbon::parse($notification->data['date'])->format('d/m/Y') }}</span>
+                                                        <span><i class="fas fa-clock text-info"></i>
+                                                            {{ \Carbon\Carbon::parse($notification->data['time'])->format('H:i') }}</span>
+                                                    </div>
+                                                    <div class="mt-1">
+                                                        <i class="fas fa-map-marker-alt text-success"></i>
+                                                        {{ $notification->data['location'] }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        @if (!empty($notification->data['jury_members']))
+                                            <div class="col-md-6">
+                                                <div class="card bg-light border-0">
+                                                    <div class="card-body py-2">
+                                                        <h6 class="card-title mb-1">Composition du jury</h6>
+                                                        @foreach ($notification->data['jury_members'] as $jury)
+                                                            <div class="mb-1">
+                                                                {{ $jury['name'] }}
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                @endif
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+    @endif
     <div class="row">
         <div class="col-md-7">
             <!-- Projets en attente de validation -->

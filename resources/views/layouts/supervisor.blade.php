@@ -182,6 +182,7 @@
                                 <p>Étudiants</p>
                             </a>
                         </li>
+
                         <li class="nav-item">
                             <a href="{{ route('supervisor.profile') }}"
                                 class="nav-link {{ request()->is('supervisor/profile') ? 'active' : '' }}">

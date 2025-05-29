@@ -15,13 +15,17 @@ class Notification extends Model
         'title',
         'message',
         'type',
+        'data', // JSON pour stocker les données de la soutenance
         'notifiable_id',
         'notifiable_type',
         'read',
+        'scheduled_for' // Pour programmer l'envoi
     ];
 
     protected $casts = [
         'read' => 'boolean',
+        'data' => 'array',
+        'scheduled_for' => 'datetime'
     ];
 
     public function user()

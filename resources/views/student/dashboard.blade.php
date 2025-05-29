@@ -2,10 +2,65 @@
 
 @section('title', 'Tableau de bord Étudiant')
 
-@section('page-title', 'Tableau de bord Étudiant')
-
 @section('student-content')
     <div class="container-fluid">
+        {{-- Notifications de soutenance --}}
+        @if (auth()->user()->notifications()->where('type', 'defense_scheduled')->where('read', false)->exists())
+            <div class="row mb-4">
+                <div class="col-12">
+                    @foreach (auth()->user()->notifications()->where('type', 'defense_scheduled')->where('read', false)->get() as $notification)
+                        <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-gavel fa-2x me-3 text-warning"></i>
+                                <div class="flex-grow-1">
+                                    <h5 class="alert-heading mb-1">{{ $notification->title }}</h5>
+                                    <p class="mb-2">{{ $notification->message }}</p>
+
+                                    @if ($notification->data)
+                                        <div class="defense-details">
+                                            <div class="row text-sm">
+                                                <div class="col-md-3">
+                                                    <i class="fas fa-calendar text-primary"></i>
+                                                    <strong>Date :</strong>
+                                                    {{ \Carbon\Carbon::parse($notification->data['date'])->format('d/m/Y') }}
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <i class="fas fa-clock text-info"></i>
+                                                    <strong>Heure :</strong>
+                                                    {{ \Carbon\Carbon::parse($notification->data['time'])->format('H:i') }}
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <i class="fas fa-map-marker-alt text-success"></i>
+                                                    <strong>Lieu :</strong> {{ $notification->data['location'] }}
+                                                </div>
+                                                <div class="col-md-3">
+                                                    <i class="fas fa-users text-secondary"></i>
+                                                    <strong>Durée :</strong> {{ $notification->data['duration'] ?? 60 }} min
+                                                </div>
+                                            </div>
+
+                                            @if (!empty($notification->data['jury_members']))
+                                                <div class="mt-2">
+                                                    <strong><i class="fas fa-user-tie"></i> Jury :</strong>
+                                                    <ul class="list-inline mb-0">
+                                                        @foreach ($notification->data['jury_members'] as $jury)
+                                                            <li class="list-inline-item">
+                                                                <span class="badge bg-info">{{ $jury['name'] }}
+                                                            </li>
+                                                        @endforeach
+                                                    </ul>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
         <div class="row mb-3">
             <div class="col-md-8">
                 <h1 class="h3">Tableau de bord Étudiant</h1>
