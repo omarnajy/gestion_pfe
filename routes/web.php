@@ -188,5 +188,4 @@ Route::prefix('admin')->middleware(['auth', \App\Http\Middleware\IsAdmin::class]
 // Routes partagées pour les projets
 Route::middleware(['auth'])->group(function () {
     Route::get('/projects/{project}', [ProjectController::class, 'show'])->name('projects.show');
-    Route::get('/projects/{project}/timeline', [ProjectController::class, 'timeline'])->name('projects.timeline');
 });

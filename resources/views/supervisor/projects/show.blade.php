@@ -165,7 +165,8 @@
                                                             <tr>
                                                                 <td>{{ $document->name }}</td>
                                                                 <td>{{ $document->type }}</td>
-                                                                <td>{{ $document->size_formatted }}</td>
+                                                                <td>{{ $document->size_formatted ?? number_format($document->size / 1024, 2) . ' KB' }}
+                                                                </td>
                                                                 <td>{{ $document->created_at->format('d/m/Y') }}</td>
                                                                 <td>
                                                                     <a href="{{ route('supervisor.documents.download', ['project' => $project->id, 'document' => $document->id]) }}"

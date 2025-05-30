@@ -27,6 +27,7 @@ class SupervisorController extends Controller
                                       ->get();
         $pendingProjectsCount = $pendingProjectsCollection->count();
         $activeProjects = Project::where('status', 'active')->count();
+        $approvedProjects = Project::where('status', 'approved')->count();
         // Récupérer uniquement les projets de ce superviseur spécifique
        // 1. Via supervisor_id direct
        $directProjects = Project::where('supervisor_id', $user->id)->get();
@@ -52,41 +53,9 @@ class SupervisorController extends Controller
         
         return view('supervisor.dashboard', compact('project','projects', 'notifications','activeProjects','totalProjects',
                     'completedProjects','recentComments','rejectedProjects',
-                    'pendingProjectsCollection','pendingProjectsCount',));
+                    'pendingProjectsCollection','pendingProjectsCount','approvedProjects'));
     }
     
-    public function studentsProgress()
-    {
-        $user = Auth::user();
-        $projects = $user->projectsAsSupervisor()->with(['student', 'tasks', 'milestones'])->get();
-        
-        return view('supervisor.dashboard', compact('projects'));
-    }
-    
-    public function upcomingDeadlines()
-    {
-        $user = Auth::user();
-        $projects = $user->projectsAsSupervisor()->with(['student', 'milestones'])->get();
-        
-        $deadlines = [];
-        foreach ($projects as $project) {
-            foreach ($project->milestones as $milestone) {
-                if ($milestone->status != 'completed') {
-                    $deadlines[] = [
-                        'project' => $project,
-                        'milestone' => $milestone,
-                    ];
-                }
-            }
-        }
-        
-        // Trier par date d'échéance
-        usort($deadlines, function($a, $b) {
-            return $a['milestone']->due_date <=> $b['milestone']->due_date;
-        });
-        
-        return view('supervisor.dashboard', compact('deadlines'));
-    }
     
     public function projectIndex()
 {
@@ -442,39 +411,6 @@ public function destroyComment($commentId)
     return view('supervisor.students.index', compact('students', 'projects'));
 }
     
-    public function scheduleMeeting(Request $request, $projectId)
-    {
-        $project = Project::where('supervisor_id', Auth::id())->findOrFail($projectId);
-        
-        $validated = $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'scheduled_at' => 'required|date|after:now',
-            'location' => 'nullable|string|max:255',
-        ]);
-        
-        $meeting = Meeting::create([
-            'project_id' => $project->id,
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'scheduled_at' => $validated['scheduled_at'],
-            'location' => $validated['location'],
-            'status' => 'scheduled',
-        ]);
-        
-        // Notifier l'étudiant
-        Notification::create([
-            'user_id' => $project->student_id,
-            'title' => 'Nouvelle réunion programmée',
-            'message' => 'Votre encadreur a programmé une réunion pour le projet "' . $project->title . '" le ' . $meeting->scheduled_at->format('d/m/Y à H:i'),
-            'type' => 'info',
-            'notifiable_id' => $meeting->id,
-            'notifiable_type' => Meeting::class,
-        ]);
-        
-        return redirect()->route('supervisor.projects.show', $project->id)
-            ->with('success', 'Réunion programmée avec succès.');
-    }
 
     public function profile(Request $request)
 {
@@ -596,16 +532,6 @@ public function storeEvaluation(Request $request, $id)
             'grade' => round($totalGrade, 2)
         ]
     );
-    
-    // Notifier l'étudiant
-    /*Notification::create([
-        'user_id' => $project->student_id,
-        'title' => 'Évaluation reçue',
-        'message' => 'Votre projet "' . $project->title . '" a été évalué par votre encadreur.',
-        'type' => 'info',
-        'notifiable_id' => $evaluation->id,
-        'notifiable_type' => Evaluation::class,
-    ]);*/
     
     return redirect()->route('supervisor.projects.show', $project->id)
         ->with('success', 'Évaluation enregistrée avec succès.');

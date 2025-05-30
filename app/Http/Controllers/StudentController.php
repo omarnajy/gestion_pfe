@@ -26,7 +26,7 @@ class StudentController extends Controller
 
         $comments = collect();
         $documents = collect();
-        $deadlines = collect();
+        
 
         $project = Project::where('student_id', $user->id)->first();
         $projects = Project::where('student_id', $user->id)->with('supervisor')->latest()->get();
@@ -41,12 +41,6 @@ class StudentController extends Controller
             // Récupérer les documents du projet
             $documents = $project->documents()->latest()->get();
 
-            // Récupérer les échéances du projet
-            $deadlines = $project->milestones()->orderBy('due_date')->get()->map(function ($milestone) {
-                $milestone->is_late = $milestone->due_date->isPast() && $milestone->status !== 'completed';
-                return $milestone;
-            });
-
             // Ajouter les attributs calculés au projet
             $this->addProjectAttributes($project);
         }
@@ -55,17 +49,8 @@ class StudentController extends Controller
             'hasProject',
             'project',
             'comments',
-            'documents',
-            'deadlines'
+            'documents'
         ));
-    }
-
-    public function timeline()
-    {
-        $user = Auth::user();
-        $projects = $user->projectsAsStudent()->with(['milestones', 'tasks'])->get();
-
-        return view('student.dashboard', compact('projects'));
     }
 
     public function statistics()
@@ -266,8 +251,6 @@ public function resubmitProject($id)
             'pending' => 'warning',
             'approved' => 'success',
             'rejected' => 'danger',
-            'in_progress' => 'info',
-            'completed' => 'primary',
             default => 'secondary',
         };
 
@@ -276,25 +259,9 @@ public function resubmitProject($id)
             'pending' => 'En attente',
             'approved' => 'Approuvé',
             'rejected' => 'Rejeté',
-            'in_progress' => 'En cours',
-            'completed' => 'Terminé',
             default => 'Inconnu',
         };
 
-        // Calculer la progression
-        if ($project->milestones()->count() > 0) {
-            $totalMilestones = $project->milestones()->count();
-            $completedMilestones = $project->milestones()->where('status', 'completed')->count();
-            $project->progress = $totalMilestones > 0 ? round(($completedMilestones / $totalMilestones) * 100) : 0;
-        } else {
-            $project->progress = match ($project->status) {
-                'pending' => 10,
-                'approved' => 30,
-                'in_progress' => 50,
-                'completed' => 100,
-                default => 0,
-            };
-        }
     }
 
     /**
@@ -533,12 +500,6 @@ public function resubmitProject($id)
         $comment->is_feedback = false;
         $comment->save();
 
-        // Si le projet a un superviseur, lui envoyer une notification
-        if ($project->supervisor_id) {
-            // Ici, vous pouvez ajouter du code pour envoyer une notification
-            // au superviseur que l'étudiant a ajouté un commentaire
-        }
-
         return redirect()->back()->with('success', 'Commentaire ajouté avec succès.');
     }
 
@@ -620,7 +581,7 @@ public function destroyComment($commentId)
         return redirect()->route('student.profile')->with('success', 'Mot de passe changé avec succès.');
     }
 
-    /**
+/**
  * Affiche l'évaluation du projet de l'étudiant
  */
 public function showEvaluation()

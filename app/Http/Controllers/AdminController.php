@@ -23,7 +23,6 @@ class AdminController extends Controller
         $totalSupervisors = User::where('role', 'supervisor')->count();
         $totalProjects = Project::count();
         $pendingProjects = Project::where('status', 'pending')->count();
-        $completedProjects = Project::where('status', 'completed')->count();
         $approvedProjects = Project::where('status', 'approved')->count();
         $rejectedProjects = Project::where('status', 'rejected')->count();
         $projects = Project::with(['student', 'supervisor'])->latest()->take(5)->get();
@@ -44,7 +43,6 @@ class AdminController extends Controller
             'totalSupervisors', 
             'totalProjects', 
             'pendingProjects', 
-            'completedProjects', 
             'approvedProjects', 
             'rejectedProjects',
             'projects',
@@ -75,16 +73,11 @@ class AdminController extends Controller
                 $query->where('department', $department);
             })->count();
             
-            $completedProjects = Project::whereHas('student', function($query) use ($department) {
-                $query->where('department', $department);
-            })->where('status', 'completed')->count();
-            
             $departmentStats[] = [
                 'name' => $department,
                 'students' => $students,
                 'supervisors' => $supervisors,
                 'projects' => $projects,
-                'completed_projects' => $completedProjects,
                 'completion_rate' => $projects > 0 ? round(($completedProjects / $projects) * 100, 2) : 0
             ];
         }
@@ -343,18 +336,14 @@ public function userStore(Request $request, $role = null)
             'pending' => 'warning',
             'approved' => 'success',
             'validated' => 'success',
-            'rejected' => 'danger',
-            'completed' => 'primary',
-            'in_progress' => 'info',
+            'rejected' => 'danger'
         ];
         
         $statusTextMap = [
             'pending' => 'En attente',
             'approved' => 'Approuvé',
             'validated' => 'Validé',
-            'rejected' => 'Rejeté',
-            'completed' => 'Terminé',
-            'in_progress' => 'En cours',
+            'rejected' => 'Rejeté'
         ];
         
         $project->status_color = $statusColorMap[$project->status] ?? 'secondary';
