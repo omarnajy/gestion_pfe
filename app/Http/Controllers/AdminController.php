@@ -536,25 +536,6 @@ public function syncProjectsAndAssignments()
         $user = auth()->user();
         return view('admin.profile_edit', compact('user'));
     }
-
-    // Paramètres généraux
-    public function generalSettings()
-    {
-        // Implémenter la logique de paramètres (à étendre)
-        return view('admin.settings.general');
-    }
-    
-    public function academicYearSettings()
-    {
-        // Implémenter la logique de l'année académique (à étendre)
-        return view('admin.settings.academic-year');
-    }
-    
-    public function deadlineSettings()
-    {
-        // Implémenter la logique des échéances (à étendre)
-        return view('admin.settings.deadlines');
-    }
     
     // Statistiques générales
     public function statistics()
