@@ -179,34 +179,6 @@
                         </div>
                     </div>
                 </div>
-
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3 class="card-title">
-                                <i class="fas fa-bell mr-1"></i>
-                                Notifications récentes
-                            </h3>
-                        </div>
-                        <div class="card-body">
-                            <div class="list-group">
-                                @forelse($notifications ?? [] as $notification)
-                                    <div class="list-group-item">
-                                        <div class="d-flex w-100 justify-content-between">
-                                            <h6 class="mb-1">{{ $notification->title ?? 'Notification' }}</h6>
-                                            <small>{{ $notification->created_at->diffForHumans() }}</small>
-                                        </div>
-                                        <p class="mb-1">{{ $notification->content ?? $notification->message }}</p>
-                                    </div>
-                                @empty
-                                    <div class="list-group-item">
-                                        <p class="text-muted text-center mb-0">Aucune notification récente</p>
-                                    </div>
-                                @endforelse
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
         </div>
     </div>
@@ -223,13 +195,12 @@
                 const statusChart = new Chart(statusCtx, {
                     type: 'pie',
                     data: {
-                        labels: ['En attente', 'Approuvés', 'Rejetés', 'Terminés'],
+                        labels: ['En attente', 'Approuvés', 'Rejetés'],
                         datasets: [{
                             data: [
                                 {{ $statusCounts['pending'] ?? 0 }},
                                 {{ $statusCounts['approved'] ?? 0 }},
-                                {{ $statusCounts['rejected'] ?? 0 }},
-                                {{ $statusCounts['completed'] ?? 0 }}
+                                {{ $statusCounts['rejected'] ?? 0 }}
                             ],
                             backgroundColor: [
                                 '#ffc107',

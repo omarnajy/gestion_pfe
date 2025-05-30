@@ -67,8 +67,8 @@
             </div>
             <div class="col-md-4 text-right">
                 @if (!$hasProject)
-                    <a href="{{ route('student.projects.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus-circle mr-1"></i> Proposer un sujet de PFE
+                    <a href="{{ route('student.projects.available') }}" class="btn btn-success">
+                        <i class="fas fa-list"></i> Choisir un sujet disponible
                     </a>
                 @endif
             </div>
@@ -117,10 +117,7 @@
                         <div class="card-header">
                             <h3 class="card-title">Documents</h3>
                             <div class="card-tools">
-                                <button type="button" class="btn btn-tool" data-toggle="modal"
-                                    data-target="#uploadDocumentModal">
-                                    <i class="fas fa-upload"></i> Ajouter
-                                </button>
+
                             </div>
                         </div>
                         <div class="card-body p-0">
@@ -172,57 +169,6 @@
                                         @endforelse
                                     </tbody>
                                 </table>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Modal d'upload de document -->
-                    <div class="modal fade" id="uploadDocumentModal" tabindex="-1" role="dialog"
-                        aria-labelledby="uploadDocumentModalLabel" aria-hidden="true">
-                        <div class="modal-dialog" role="document">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="uploadDocumentModalLabel">Téléverser un document</h5>
-                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                                        <span aria-hidden="true">&times;</span>
-                                    </button>
-                                </div>
-                                <form action="{{ route('student.documents.store', $project->id) }}" method="POST"
-                                    enctype="multipart/form-data">
-                                    @csrf
-                                    <div class="modal-body">
-                                        <div class="form-group">
-                                            <label for="documentName">Nom du document</label>
-                                            <input type="text" class="form-control" id="documentName" name="name"
-                                                required>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="documentType">Type de document</label>
-                                            <select class="form-control" id="documentType" name="type" required>
-                                                <option value="rapport">Rapport</option>
-                                                <option value="presentation">Présentation</option>
-                                                <option value="annexe">Annexe</option>
-                                                <option value="autre">Autre</option>
-                                            </select>
-                                        </div>
-                                        <div class="form-group">
-                                            <label for="documentFile">Fichier</label>
-                                            <div class="custom-file">
-                                                <input type="file" class="custom-file-input" id="documentFile"
-                                                    name="document" required accept=".pdf,.doc,.docx,.ppt,.pptx">
-                                                <label class="custom-file-label" for="documentFile">Choisir un
-                                                    fichier</label>
-                                            </div>
-                                            <small class="form-text text-muted">Formats acceptés: PDF, DOC, DOCX, PPT,
-                                                PPTX. Taille max: 10MB</small>
-                                        </div>
-                                    </div>
-                                    <div class="modal-footer">
-                                        <button type="button" class="btn btn-secondary"
-                                            data-dismiss="modal">Annuler</button>
-                                        <button type="submit" class="btn btn-primary">Téléverser</button>
-                                    </div>
-                                </form>
                             </div>
                         </div>
                     </div>

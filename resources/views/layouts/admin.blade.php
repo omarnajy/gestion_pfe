@@ -318,9 +318,9 @@
             <div class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
-                        <div class="col-sm-6">
+                        <!--<div class="col-sm-6">
                             <h1 class="m-0">@yield('page-title')</h1>
-                        </div>
+                        </div>-->
                     </div>
 
                     @if (session('success'))
@@ -348,13 +348,13 @@
                 </div>
             </section>
         </div>
-        <!-- /.content-wrapper -->
+        <!-- /.content-wrapper-->
 
-        <footer class="main-footer">
+        <footer class="main-footer"><!--
             <div class="float-end d-none d-sm-block">
                 <b>Version</b> 1.0
             </div>
-            <strong>&copy; {{ date('Y') }} Gestion PFE.</strong> Tous droits réservés.
+            <strong>&copy; {{ date('Y') }} Gestion PFE.</strong> Tous droits réservés.-->
         </footer>
     </div>
     <!-- ./wrapper -->

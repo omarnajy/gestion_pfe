@@ -57,8 +57,7 @@
                 <div class="card-body">
                     <p><strong>Encadreur :</strong> {{ $project->supervisor->name ?? 'Non assigné' }}</p>
                     <p><strong>Date de soumission :</strong> {{ $project->created_at->format('d/m/Y') }}</p>
-                    <p><strong>Statut :</strong> <span
-                            class="badge bg-{{ $project->status_color }}">{{ $project->status_text }}</span></p>
+
                 </div>
             </div>
         </div>

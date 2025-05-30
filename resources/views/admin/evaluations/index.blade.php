@@ -43,7 +43,7 @@
                     <div class="card-body">
                         <div class="d-flex justify-content-between">
                             <div>
-                                <h4 class="mb-0">{{ number_format($stats['success_rate'], 1) }}%</h4>
+                                <h4 class="mb-0">{{ number_format($stats['success_rate'], 2) }}%</h4>
                                 <p class="mb-0">Taux de réussite</p>
                             </div>
                             <div><i class="fas fa-trophy fa-2x"></i></div>

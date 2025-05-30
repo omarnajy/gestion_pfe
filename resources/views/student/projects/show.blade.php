@@ -8,7 +8,7 @@
                     <div class="card-header d-flex justify-content-between align-items-center">
                         <span>{{ __('Détails du Projet') }}</span>
                         <a href="{{ route('student.projects.index') }}" class="btn btn-sm btn-secondary">
-                            <i class="fas fa-arrow-left"></i> Retour aux projets
+                            <i class="fas fa-arrow-left"></i> Retour a mon projet
                         </a>
                     </div>
 

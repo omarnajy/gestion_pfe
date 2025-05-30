@@ -202,10 +202,10 @@
             <!-- Content Header -->
             <div class="content-header">
                 <div class="container-fluid">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
+                    <!--<div class="d-flex justify-content-between align-items-center mb-4">
                         <h1 class="h3">@yield('page-title', 'Tableau de bord')</h1>
                         @yield('page-actions')
-                    </div>
+                    </div>-->
 
                     @if (session('success'))
                         <div class="alert alert-success alert-dismissible fade show">
@@ -234,11 +234,11 @@
         </div>
         <!-- /.content-wrapper -->
 
-        <footer class="main-footer">
+        <footer class="main-footer"><!--
             <div class="float-end d-none d-sm-block">
                 <b>Version</b> 1.0
             </div>
-            <strong>&copy; {{ date('Y') }} Gestion PFE.</strong> Tous droits réservés.
+            <strong>&copy; {{ date('Y') }} Gestion PFE.</strong> Tous droits réservés.-->
         </footer>
     </div>
     <!-- ./wrapper -->

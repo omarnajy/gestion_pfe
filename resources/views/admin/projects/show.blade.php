@@ -42,14 +42,6 @@
                                                     $statusText = 'Rejeté';
                                                     $statusClass = 'bg-danger';
                                                     break;
-                                                case 'completed':
-                                                    $statusText = 'Terminé';
-                                                    $statusClass = 'bg-primary';
-                                                    break;
-                                                case 'in_progress':
-                                                    $statusText = 'En cours';
-                                                    $statusClass = 'bg-info';
-                                                    break;
                                                 default:
                                                     $statusText = $project->status;
                                                     $statusClass = 'bg-secondary';
@@ -80,10 +72,8 @@
                                                                 </th>
                                                                 <td>
                                                                     @if ($project->student)
-                                                                        <a href="{{ route('admin.users.show', $project->student_id) }}"
-                                                                            class="text-decoration-none">
-                                                                            <i class="fas fa-user text-primary me-1"></i>
-                                                                            {{ $project->student->name }}
+                                                                        <i class="fas fa-user text-primary me-1"></i>
+                                                                        {{ $project->student->name }}
                                                                         </a>
                                                                     @else
                                                                         <span
@@ -126,24 +116,17 @@
 
                                                                     @if ($supervisor)
                                                                         <div class="d-flex align-items-center">
-                                                                            <a href="{{ route('admin.users.show', $supervisorId) }}"
-                                                                                class="text-decoration-none me-2">
-                                                                                <i
-                                                                                    class="fas fa-user-tie text-success me-1"></i>
-                                                                                {{ $supervisor->name }}
+
+                                                                            <i
+                                                                                class="fas fa-user-tie text-success me-1"></i>
+                                                                            {{ $supervisor->name }}
                                                                             </a>
                                                                         </div>
                                                                     @else
                                                                         <div class="d-flex align-items-center">
                                                                             <span
                                                                                 class="text-muted me-2">{{ __('Non assigné') }}</span>
-                                                                            <button type="button"
-                                                                                class="btn btn-sm btn-primary"
-                                                                                data-bs-toggle="modal"
-                                                                                data-bs-target="#assignSupervisorModal">
-                                                                                <i class="fas fa-plus-circle me-1"></i>
-                                                                                {{ __('Assigner') }}
-                                                                            </button>
+
                                                                         </div>
                                                                     @endif
                                                                 </td>
@@ -183,13 +166,6 @@
                                                 class="btn btn-outline-primary">
                                                 <i class="fas fa-file-alt me-1"></i> {{ __('Voir les documents') }}
                                             </a>
-
-                                            @if (!$supervisor)
-                                                <button type="button" class="btn btn-primary mt-2" data-bs-toggle="modal"
-                                                    data-bs-target="#assignSupervisorModal">
-                                                    <i class="fas fa-user-plus me-1"></i> {{ __('Assigner un encadreur') }}
-                                                </button>
-                                            @endif
                                         </div>
                                     </div>
                                 </div>

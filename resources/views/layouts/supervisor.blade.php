@@ -183,6 +183,7 @@
                             </a>
                         </li>
 
+
                         <li class="nav-item">
                             <a href="{{ route('supervisor.profile') }}"
                                 class="nav-link {{ request()->is('supervisor/profile') ? 'active' : '' }}">
@@ -230,10 +231,10 @@
         <!-- /.content-wrapper -->
 
         <footer class="main-footer">
-            <div class="float-end d-none d-sm-block">
+            <!--<div class="float-end d-none d-sm-block">
                 <b>Version</b> 1.0
             </div>
-            <strong>&copy; {{ date('Y') }} Gestion PFE.</strong> Tous droits réservés.
+            <strong>&copy; {{ date('Y') }} Gestion PFE.</strong> Tous droits réservés.-->
         </footer>
     </div>
     <!-- ./wrapper -->

@@ -5,7 +5,7 @@
     <div class="container">
         <div class="row mb-4">
             <div class="col-md-8">
-                <h1>Mes Projets</h1>
+                <h1>Mon Projet</h1>
             </div>
             <div class="col-md-4 text-end">
                 @if (auth()->user()->projectsAsStudent()->where('status', '!=', 'rejected')->count() == 0)

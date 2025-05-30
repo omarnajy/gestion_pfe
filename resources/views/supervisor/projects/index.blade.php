@@ -137,18 +137,6 @@
                             </div>
                         </div>
 
-                        <div class="mb-3">
-                            <label for="prerequisites" class="form-label">Prérequis</label>
-                            <textarea class="form-control" id="prerequisites" name="prerequisites" rows="3"></textarea>
-                            <div class="form-text">Compétences ou connaissances nécessaires pour mener à bien ce projet.
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label for="expected_results" class="form-label">Résultats attendus</label>
-                            <textarea class="form-control" id="expected_results" name="expected_results" rows="3"></textarea>
-                        </div>
-
                         <input type="hidden" name="supervisor_id" value="{{ Auth::id() }}">
 
                     </div>

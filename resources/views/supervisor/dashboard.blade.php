@@ -33,38 +33,22 @@
 
                                 @if ($notification->data)
                                     <div class="row g-3">
-                                        <div class="col-md-6">
+                                        <div class="col-md-7">
                                             <div class="card bg-light border-0">
                                                 <div class="card-body py-2">
-                                                    <h6 class="card-title mb-1">Détails de la soutenance</h6>
+
                                                     <div class="d-flex justify-content-between">
+                                                        <h6 class="card-title mb-1">Détails de la soutenance </h6><br>
                                                         <span><i class="fas fa-calendar text-primary"></i>
                                                             {{ \Carbon\Carbon::parse($notification->data['date'])->format('d/m/Y') }}</span>
                                                         <span><i class="fas fa-clock text-info"></i>
                                                             {{ \Carbon\Carbon::parse($notification->data['time'])->format('H:i') }}</span>
-                                                    </div>
-                                                    <div class="mt-1">
-                                                        <i class="fas fa-map-marker-alt text-success"></i>
-                                                        {{ $notification->data['location'] }}
+                                                        <span><i class="fas fa-map-marker-alt text-success"></i>
+                                                            {{ $notification->data['location'] }}</span>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-
-                                        @if (!empty($notification->data['jury_members']))
-                                            <div class="col-md-6">
-                                                <div class="card bg-light border-0">
-                                                    <div class="card-body py-2">
-                                                        <h6 class="card-title mb-1">Composition du jury</h6>
-                                                        @foreach ($notification->data['jury_members'] as $jury)
-                                                            <div class="mb-1">
-                                                                {{ $jury['name'] }}
-                                                            </div>
-                                                        @endforeach
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        @endif
                                     </div>
                                 @endif
                             </div>
@@ -167,7 +151,7 @@
         </div>
 
         <div class="col-md-5">
-            <!-- Commentaires récents - section agrandie -->
+            <!-- Commentaires récents  -->
             <div class="card shadow mb-4">
                 <div class="card-header bg-secondary text-white">
                     <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Commentaires récents</h5>
